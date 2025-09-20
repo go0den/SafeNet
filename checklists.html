@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чек-листы безопасности - SafeNet</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        h1 {
+            margin-top: 0;
+        }
+        .checklist {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .checklist h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .checklist-item {
+            margin: 15px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .checklist-item:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        .back-btn {
+            display: inline-block;
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+        .back-btn:hover {
+            background-color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Чек-листы безопасности</h1>
+            <p>Практические руководства для проверки вашей цифровой безопасности</p>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="checklist">
+            <h2>Безопасность электронной почты</h2>
+            <div class="checklist-item">Используйте уникальные сложные пароли для каждой учетной записи</div>
+            <div class="checklist-item">Включите двухфакторную аутентификацию</div>
+            <div class="checklist-item">Проверяйте отправителя перед открытием вложений</div>
+            <div class="checklist-item">Не переходите по подозрительным ссылкам в письмах</div>
+            <div class="checklist-item">Регулярно обновляйте почтовые приложения</div>
+        </div>
+        
+        <div class="checklist">
+            <h2>Защита банковских операций</h2>
+            <div class="checklist-item">Проверяйте URL банковского сайта перед вводом данных</div>
+            <div class="checklist-item">Никому не сообщайте CVV код и срок действия карты</div>
+            <div class="checklist-item">Установите лимиты на онлайн-платежи</div>
+            <div class="checklist-item">Подключите SMS-уведомления о всех операциях</div>
+            <div class="checklist-item">Используйте виртуальные карты для онлайн-платежей</div>
+        </div>
+        
+        <div class="checklist">
+            <h2>Безопасность в социальных сетях</h2>
+            <div class="checklist-item">Ограничьте доступ к личной информации в настройках приватности</div>
+            <div class="checklist-item">Не публикуйте информацию о местенахождении в реальном времени</div>
+            <div class="checklist-item">Будьте осторожны с запросами друзей от незнакомцев</div>
+            <div class="checklist-item">Не делитесь конфиденциальной информацией в личных сообщениях</div>
+            <div class="checklist-item">Регулярно проверяйте активность вашего аккаунта</div>
+        </div>
+        
+        <a href="index.html" class="back-btn">Вернуться на главную</a>
+    </div>
+</body>
+</html>
