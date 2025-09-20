@@ -129,17 +129,6 @@
             color: #7f8c8d;
             font-size: 1.1rem;
         }
-
-        .debug-info {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 5px;
-            padding: 15px;
-            margin-top: 20px;
-            font-family: monospace;
-            font-size: 12px;
-            display: none;
-        }
     </style>
 </head>
 <body>
@@ -157,17 +146,11 @@
         </div>
 
         <button class="btn refresh-btn" onclick="loadNews()">Обновить новости</button>
-        <button class="btn" onclick="toggleDebug()" style="margin-left: 10px; background-color: var(--accent)">Отладка</button>
         
         <div id="news-container" class="news-grid">
             <div class="loading">
                 <p>Загрузка новостей...</p>
             </div>
-        </div>
-
-        <div id="debug-info" class="debug-info">
-            <h4>Отладочная информация:</h4>
-            <div id="debug-content"></div>
         </div>
 
         <div style="text-align: center; margin-top: 2rem;">
@@ -179,16 +162,6 @@
         // ID вашей Google Таблицы
         const GOOGLE_SHEET_ID = '1fCv50TBwrxraXDEgGiT7DKyuDKhoJg4fdPTPVWyhQ6Q';
         const SHEET_NAME = 'Лист1';
-
-        function toggleDebug() {
-            const debugInfo = document.getElementById('debug-info');
-            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function addDebugInfo(message) {
-            const debugContent = document.getElementById('debug-content');
-            debugContent.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
-        }
 
         // Функция для преобразования даты из формата Google Sheets
         function parseGoogleSheetsDate(dateValue) {
@@ -230,23 +203,17 @@
         async function loadNews() {
             const newsContainer = document.getElementById('news-container');
             newsContainer.innerHTML = '<div class="loading"><p>Загрузка новостей...</p></div>';
-            document.getElementById('debug-content').innerHTML = '';
             
             try {
-                addDebugInfo('Начинаем загрузку данных...');
                 const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
-                addDebugInfo(`URL: ${url}`);
                 
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Ошибка загрузки таблицы');
                 
                 const text = await response.text();
-                addDebugInfo(`Получено ${text.length} символов данных`);
-                
                 if (!text || text.length < 50) throw new Error('Таблица пустая или не найдена');
                 
                 const json = JSON.parse(text.substring(47).slice(0, -2));
-                addDebugInfo(`Получено ${json.table.rows.length} строк`);
                 
                 const news = [];
                 const rows = json.table.rows;
@@ -255,15 +222,12 @@
                     throw new Error('В таблице нет данных');
                 }
                 
-                addDebugInfo(`Обрабатываем строки с 1 по ${rows.length-1} (0 - заголовок)`);
-                
                 // Обрабатываем все строки, начиная со второй (пропускаем заголовок)
                 for (let i = 1; i < rows.length; i++) {
                     const cells = rows[i].c;
                     
                     // Пропускаем полностью пустые строки
                     if (!cells || cells.every(cell => !cell || (!cell.v && !cell.f))) {
-                        addDebugInfo(`Строка ${i}: пропущена (пустая)`);
                         continue;
                     }
                     
@@ -273,11 +237,8 @@
                     const content = cells[2] ? (cells[2].v || '') : '';
                     const image = cells[3] ? (cells[3].v || '') : '';
                     
-                    addDebugInfo(`Строка ${i}: "${title}" | "${content.substring(0, 30)}..."`);
-                    
                     // Пропускаем строки без заголовка и содержания
                     if (!title && !content) {
-                        addDebugInfo(`Строка ${i}: пропущена (нет заголовка и содержания)`);
                         continue;
                     }
                     
@@ -291,8 +252,6 @@
                     });
                 }
                 
-                addDebugInfo(`Найдено ${news.length} новостей`);
-                
                 // Сортируем новости по дате (новые сверху)
                 news.sort((a, b) => new Date(b.date) - new Date(a.date));
                 
@@ -300,7 +259,6 @@
                 
             } catch (error) {
                 console.error('Ошибка загрузки новостей:', error);
-                addDebugInfo(`Ошибка: ${error.message}`);
                 newsContainer.innerHTML = `
                     <div class="error">
                         <p>Не удалось загрузить новости</p>
@@ -322,14 +280,12 @@
             
             if (news.length === 0) {
                 newsContainer.innerHTML = '<div class="loading"><p>Новостей пока нет. Добавьте данные в таблицу.</p></div>';
-                addDebugInfo('Новостей для отображения нет');
                 return;
             }
             
             newsContainer.innerHTML = '';
-            addDebugInfo(`Отображаем ${news.length} новостей`);
             
-            news.forEach((item, index) => {
+            news.forEach(item => {
                 const newsItem = document.createElement('div');
                 newsItem.className = 'news-item';
                 
@@ -357,7 +313,6 @@
                 `;
                 
                 newsContainer.appendChild(newsItem);
-                addDebugInfo(`Добавлена новость ${index + 1}: "${item.title}"`);
             });
         }
         
