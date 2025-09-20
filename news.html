@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Новости безопасности - SafeNet</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem 0;
+        }
+        
+        .news-grid {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .news-item {
+            background-color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--secondary);
+        }
+        
+        .news-item h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .news-date {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        
+        .news-content {
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .news-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #7f8c8d;
+        }
+        
+        .error {
+            background-color: #ffeaea;
+            border: 1px solid #ffcccc;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            color: #d63031;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--secondary);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .refresh-btn {
+            margin-bottom: 1rem;
+            background-color: var(--primary);
+        }
+        
+        .site-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .site-title {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .site-description {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>SafeNet - Защита от мошенничества</h1>
+            <p>Актуальные новости о кибербезопасности</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="site-header">
+            <h2 class="site-title">Последние новости</h2>
+            <p class="site-description">Самые свежие материалы о защите от мошенников</p>
+        </div>
+
+        <button class="btn refresh-btn" onclick="loadNews()">Обновить новости</button>
+        
+        <div id="news-container" class="news-grid">
+            <div class="loading">
+                <p>Загрузка новостей...</p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="index.html" class="btn">Перейти на главный сайт</a>
+        </div>
+    </div>
+
+    <script>
+        // ID вашей Google Таблицы
+        const GOOGLE_SHEET_ID = '1fCv50TBwrxraXDEgGiT7DKyuDKhoJg4fdPTPVWyhQ6Q';
+        const SHEET_NAME = 'Лист1';
+
+        // Функция для преобразования даты из формата Google Sheets
+        function parseGoogleSheetsDate(dateValue) {
+            if (!dateValue) return new Date();
+            
+            // Если это число (серийная дата Excel/Google Sheets)
+            if (typeof dateValue === 'number') {
+                // Google Sheets использует даты с 30 декабря 1899 года
+                const excelEpoch = new Date(1899, 11, 30);
+                const millisecondsPerDay = 24 * 60 * 60 * 1000;
+                return new Date(excelEpoch.getTime() + dateValue * millisecondsPerDay);
+            }
+            
+            // Если это строка, пытаемся распарсить
+            if (typeof dateValue === 'string') {
+                const parsedDate = new Date(dateValue);
+                if (!isNaN(parsedDate.getTime())) {
+                    return parsedDate;
+                }
+                
+                // Пробуем парсить форматы типа "20.03.2024"
+                const parts = dateValue.split('.');
+                if (parts.length === 3) {
+                    return new Date(parts[2], parts[1] - 1, parts[0]);
+                }
+            }
+            
+            // Если ничего не сработало, возвращаем текущую дату
+            return new Date();
+        }
+
+        // Функция для загрузки новостей из Google Таблицы
+        async function loadNews() {
+            const newsContainer = document.getElementById('news-container');
+            newsContainer.innerHTML = '<div class="loading"><p>Загрузка новостей...</p></div>';
+            
+            try {
+                const url = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+                
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Ошибка загрузки таблицы');
+                
+                const text = await response.text();
+                if (!text || text.length < 50) throw new Error('Таблица пустая или не найдена');
+                
+                const json = JSON.parse(text.substring(47).slice(0, -2));
+                
+                const news = [];
+                const rows = json.table.rows;
+                
+                if (!rows || rows.length === 0) {
+                    throw new Error('В таблице нет данных');
+                }
+                
+                // Обрабатываем все строки, начиная со второй (пропускаем заголовок)
+                for (let i = 1; i < rows.length; i++) {
+                    const cells = rows[i].c;
+                    
+                    // Пропускаем пустые строки
+                    if (!cells || cells.length === 0) continue;
+                    
+                    // Получаем значения ячеек
+                    const dateValue = cells[0] ? (cells[0].f || cells[0].v) : null;
+                    const title = cells[1] ? (cells[1].v || '') : '';
+                    const content = cells[2] ? (cells[2].v || '') : '';
+                    const image = cells[3] ? (cells[3].v || '') : '';
+                    
+                    // Пропускаем строки без заголовка и содержания
+                    if (!title && !content) continue;
+                    
+                    const newsDate = parseGoogleSheetsDate(dateValue);
+                    
+                    news.push({
+                        date: newsDate.toISOString(),
+                        title: title.toString(),
+                        content: content.toString(),
+                        image: image.toString()
+                    });
+                }
+                
+                // Сортируем новости по дате (новые сверху)
+                news.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                displayNews(news);
+                
+            } catch (error) {
+                console.error('Ошибка загрузки новостей:', error);
+                newsContainer.innerHTML = `
+                    <div class="error">
+                        <p>Не удалось загрузить новости</p>
+                        <p><small>${error.message}</small></p>
+                        <p>Проверьте:</p>
+                        <ul style="text-align: left; margin: 0.5rem 0;">
+                            <li>Таблица доступна по ссылке</li>
+                            <li>Данные есть на листе "${SHEET_NAME}"</li>
+                            <li>Формат: Дата | Заголовок | Текст | Картинка</li>
+                        </ul>
+                    </div>
+                `;
+            }
+        }
+        
+        // Функция для отображения новостей
+        function displayNews(news) {
+            const newsContainer = document.getElementById('news-container');
+            
+            if (news.length === 0) {
+                newsContainer.innerHTML = '<div class="loading"><p>Новостей пока нет. Добавьте данные в таблицу.</p></div>';
+                return;
+            }
+            
+            newsContainer.innerHTML = '';
+            
+            news.forEach(item => {
+                const newsItem = document.createElement('div');
+                newsItem.className = 'news-item';
+                
+                const date = new Date(item.date);
+                const formattedDate = date.toLocaleDateString('ru-RU', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                
+                let contentHtml = item.content;
+                
+                // Если в тексте есть переносы строк, преобразуем их в <br>
+                if (contentHtml.includes('\n')) {
+                    contentHtml = contentHtml.split('\n').map(line => {
+                        return line.trim() ? line + '<br>' : '';
+                    }).join('');
+                }
+                
+                newsItem.innerHTML = `
+                    <h3>${item.title}</h3>
+                    <div class="news-date">${formattedDate}</div>
+                    <div class="news-content">${contentHtml}</div>
+                    ${item.image ? `<img src="${item.image}" class="news-image" alt="${item.title}" onerror="this.style.display='none'">` : ''}
+                `;
+                
+                newsContainer.appendChild(newsItem);
+            });
+        }
+        
+        // Загружаем новости при загрузке страницы
+        document.addEventListener('DOMContentLoaded', loadNews);
+    </script>
+</body>
+</html>
